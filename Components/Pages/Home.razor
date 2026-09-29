@@ -1,0 +1,83 @@
+@page "/"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.Identity.Web
+@inject ReproAuthenticationStateProvider Provider
+@inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
+
+<main>
+    <h1>Blazor consent handler: stale authentication state</h1>
+    <p>
+        This page compares Blazor's cascading authentication state with
+        <code>MicrosoftIdentityConsentAndConditionalAccessHandler.User</code>
+        in the same live circuit.
+    </p>
+    <p>
+        Both start as Alice. Change the synthetic identity without reloading the page:
+        the provider updates, but Microsoft.Identity.Web 4.15.0 keeps the original user.
+    </p>
+
+    <div class="actions">
+        <button @onclick="Provider.SwitchToBob">Switch to Bob</button>
+        <button @onclick="Provider.BecomeAnonymous">Become anonymous</button>
+        <a href="/" data-enhance-nav="false">Start a new circuit</a>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Source</th>
+                <th>User</th>
+                <th>Authenticated</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th>AuthenticationStateProvider (via Blazor)</th>
+                <td data-testid="provider-user">@DisplayName(_currentUser)</td>
+                <td data-testid="provider-authenticated">@IsAuthenticated(_currentUser)</td>
+            </tr>
+            <tr>
+                <th>Microsoft.Identity.Web consent handler</th>
+                <td data-testid="consent-user">@DisplayName(ConsentHandler.User)</td>
+                <td data-testid="consent-authenticated">@IsAuthenticated(ConsentHandler.User)</td>
+            </tr>
+        </tbody>
+    </table>
+
+    @if (ReferenceEquals(_currentUser, ConsentHandler.User))
+    {
+        <p class="status" data-testid="status">Both sources have the current principal.</p>
+    }
+    else
+    {
+        <p class="status mismatch" data-testid="status">
+            Reproduced: the consent handler still has the original principal.
+        </p>
+    }
+
+    <p>
+        No Entra tenant, cookies, tokens, or real sign-in/sign-out are involved.
+        The buttons only publish <code>AuthenticationStateChanged</code> notifications.
+        This is a local diagnostic repro, not production authentication code.
+    </p>
+</main>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationState { get; set; } = default!;
+
+    private ClaimsPrincipal _currentUser = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _currentUser = (await AuthenticationState).User;
+    }
+
+    private static string DisplayName(ClaimsPrincipal user) =>
+        user.Identity?.Name ?? "(anonymous)";
+
+    private static bool IsAuthenticated(ClaimsPrincipal user) =>
+        user.Identity?.IsAuthenticated is true;
+}

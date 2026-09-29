@@ -1,0 +1,72 @@
+body {
+    margin: 0;
+    color: #202124;
+    background: #fafafa;
+    font: 1rem/1.6 system-ui, sans-serif;
+}
+
+main {
+    max-width: 60rem;
+    margin: 3rem auto;
+    padding: 0 1.5rem;
+}
+
+h1 {
+    line-height: 1.2;
+}
+
+h1:focus {
+    outline: none;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+button {
+    border: 1px solid #444;
+    border-radius: 0.3rem;
+    padding: 0.6rem 1rem;
+    background: white;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #eee;
+}
+
+a {
+    color: #1755a4;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 0.75rem;
+    border: 1px solid #ccc;
+    text-align: left;
+}
+
+thead {
+    background: #eee;
+}
+
+.status {
+    padding: 1rem;
+    background: #e8f0fe;
+    border-left: 4px solid #1755a4;
+}
+
+.mismatch {
+    background: #fff2dc;
+    border-color: #995500;
+}
